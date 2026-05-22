@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.token_service import TokenService
 from app.adapters.facebook import FacebookAdapter
 from app.adapters.instagram import InstagramAdapter
+from app.adapters.twitter import TwitterAdapter
+from app.adapters.linkedin import LinkedInAdapter
 from app.core.mock_oauth import is_mock_mode
 from app.models.post import Post
 from app.models.analytics import AnalyticsRecord
@@ -46,7 +48,7 @@ class PublishService:
         await self.db.commit()
         await self.db.refresh(post)
         
-        print(f"📝 Created post record #{post.id} for platforms: {platforms}")
+        print(f" Created post record #{post.id} for platforms: {platforms}")
         
         results = {}
         all_successful = True
@@ -117,7 +119,7 @@ class PublishService:
         post.published_at = datetime.utcnow()
         await self.db.commit()
         
-        print(f"📊 Post #{post.id} status: {post.status}")
+        print(f"Post #{post.id} status: {post.status}")
         
         return results
     
@@ -135,6 +137,10 @@ class PublishService:
                 instagram_business_id = "mock_instagram_business_id"
             
             return InstagramAdapter(access_token, instagram_business_id or "unknown")
+        elif platform == "twitter":
+            return TwitterAdapter(access_token)
+        elif platform == "linkedin":
+            return LinkedInAdapter(access_token)
         else:
             return None
     
