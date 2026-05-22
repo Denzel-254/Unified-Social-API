@@ -5,11 +5,8 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base, AsyncSessionLocal
-from app.api.routes import auth
+from app.api.routes import auth, mock_auth, publish  # ← MAKE SURE publish IS IMPORTED
 from app.services.user_service import UserService
-
-from app.api.routes import mock_auth
-
 
 
 @asynccontextmanager
@@ -56,11 +53,11 @@ app.add_middleware(
 # Create versioned API router
 api_router = APIRouter(prefix=settings.api_v1_prefix)
 api_router.include_router(auth.router)
-app.include_router(mock_auth.router)
-
+api_router.include_router(publish.router)  # ← MAKE SURE THIS LINE EXISTS!
 
 # Include routers
 app.include_router(api_router)
+app.include_router(mock_auth.router)
 
 # Root endpoints (no version prefix)
 @app.get("/")
