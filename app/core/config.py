@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     celery_broker_url: Optional[str] = Field(default=None, alias="CELERY_BROKER_URL")
     celery_result_backend: Optional[str] = Field(default=None, alias="CELERY_RESULT_BACKEND")
     
+    # Mock OAuth (ADD THIS LINE)
+    mock_oauth: bool = Field(default=True, alias="MOCK_OAUTH")  # ← ADD THIS
+    
     # OAuth credentials
     meta_app_id: Optional[str] = Field(default=None, alias="META_APP_ID")
     meta_app_secret: Optional[str] = Field(default=None, alias="META_APP_SECRET")
@@ -45,6 +48,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # ←  - ignores any extra fields
 
 
 settings = Settings()
