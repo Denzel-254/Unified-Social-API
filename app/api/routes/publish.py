@@ -21,7 +21,7 @@ CURRENT_USER_ID = 1
 
 class PublishRequest(BaseModel):
     """Request model for publishing content to platforms."""
-    platforms: List[str]
+    platforms: List[str] 
     content: str
     media_url: Optional[str] = None
     media_type: Optional[str] = None
@@ -59,7 +59,7 @@ async def publish_content(
         if request.media_type not in ["image", "video"]:
             raise HTTPException(status_code=400, detail="media_type must be 'image' or 'video'.")
     
-    supported_platforms = ["facebook", "instagram", "twitter", "linkedin"]
+    supported_platforms = ["facebook", "instagram", "twitter", "linkedin", "youtube", "whatsapp"]
     invalid_platforms = [p for p in request.platforms if p not in supported_platforms]
     
     if invalid_platforms:
@@ -139,7 +139,7 @@ async def post_twitter_thread(
     await db.commit()
     await db.refresh(post)
     
-    print(f"📝 Created thread post record #{post.id} for Twitter thread")
+    print(f"Created thread post record #{post.id} for Twitter thread")
     
     # Create adapter and post thread
     adapter = TwitterAdapter(token.access_token)
@@ -181,7 +181,7 @@ async def post_twitter_thread(
     post.published_at = datetime.utcnow()
     await db.commit()
     
-    print(f"📊 Thread post #{post.id} status: {post.status} ({len(successful_tweets)}/{len(results)} successful)")
+    print(f"Thread post #{post.id} status: {post.status} ({len(successful_tweets)}/{len(results)} successful)")
     
     return {
         "message": f"Posted {len(results)} tweets",
@@ -369,36 +369,19 @@ async def delete_post(
 
 @router.get("/supported-platforms")
 async def get_supported_platforms():
-    """Get list of currently supported platforms."""
     return {
-        "current_day": "Day 4",
+        "current_day": "Day 5 - ALL PLATFORMS COMPLETE!",
         "supported_platforms": {
-            "facebook": {
-                "available": True,
-                "features": ["text", "image", "video"],
-                "notes": "Posts to user timeline"
-            },
-            "instagram": {
-                "available": True,
-                "features": ["image", "video"],
-                "notes": "Instagram Business accounts only"
-            },
-            "twitter": {
-                "available": True,
-                "features": ["text", "threads", "replies"],
-                "notes": "280 character limit. Threads via POST /publish/thread"
-            },
-            "linkedin": {
-                "available": True,
-                "features": ["text", "image"],
-                "notes": "Company page posting coming soon"
-            }
+            "facebook": {"available": True, "features": ["text", "image", "video"]},
+            "instagram": {"available": True, "features": ["image", "video"]},
+            "twitter": {"available": True, "features": ["text", "threads", "replies"]},
+            "linkedin": {"available": True, "features": ["text", "image"]},
+            "youtube": {"available": True, "features": ["video upload"], "notes": "Requires video URL"},
+            "whatsapp": {"available": True, "features": ["text", "image", "video"], "notes": "Business API only"}
         },
-        "coming_soon": {
-            "Day 5": ["youtube", "whatsapp"]
-        }
+        "total_platforms": 6,
+        "message": "ALL 6 PLATFORMS FROM THE ORIGINAL PLAN ARE NOW SUPPORTED!"
     }
-
 
 @router.get("/health")
 async def publish_health():

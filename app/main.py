@@ -19,16 +19,16 @@ async def lifespan(app: FastAPI):
     # Create test user
     async with AsyncSessionLocal() as db:
         await UserService.get_or_create_test_user(db)
-        print("✅ Test user created (email: test@example.com)")
+        print("Test user created (email: test@example.com)")
     
-    print(f"✅ Database ready: {settings.database_url}")
-    print(f"📝 API Docs: http://localhost:8000/docs")
-    print(f"🔐 OAuth endpoints: http://localhost:8000{settings.api_v1_prefix}/auth/{{platform}}/connect")
+    print(f"Database ready: {settings.database_url}")
+    print(f"API Docs: http://localhost:8000/docs")
+    print(f"OAuth endpoints: http://localhost:8000{settings.api_v1_prefix}/auth/{{platform}}/connect")
     yield
     
     # Shutdown
     await engine.dispose()
-    print("✅ Clean shutdown complete")
+    print("Clean shutdown complete")
 
 
 # Create FastAPI app
@@ -53,7 +53,7 @@ app.add_middleware(
 # Create versioned API router
 api_router = APIRouter(prefix=settings.api_v1_prefix)
 api_router.include_router(auth.router)
-api_router.include_router(publish.router)  # ← MAKE SURE THIS LINE EXISTS!
+api_router.include_router(publish.router)  
 
 # Include routers
 app.include_router(api_router)

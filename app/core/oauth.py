@@ -54,7 +54,8 @@ OAUTH_CONFIG = {
         "access_token_url": "https://graph.facebook.com/v18.0/oauth/access_token",
         "scope": ["whatsapp_business_messaging"],
         "redirect_uri": "/api/v1/auth/whatsapp/callback"
-    }
+    },
+    
 }
 
 

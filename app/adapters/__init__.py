@@ -5,6 +5,8 @@ from app.adapters.facebook import FacebookAdapter
 from app.adapters.instagram import InstagramAdapter
 from app.adapters.twitter import TwitterAdapter
 from app.adapters.linkedin import LinkedInAdapter
+from app.adapters.youtube import YouTubeAdapter
+from app.adapters.whatsapp import WhatsAppAdapter
 
 __all__ = [
     "BaseAdapter", 
@@ -13,5 +15,7 @@ __all__ = [
     "FacebookAdapter", 
     "InstagramAdapter",
     "TwitterAdapter",
-    "LinkedInAdapter"
+    "LinkedInAdapter",
+    "YouTubeAdapter",
+    "WhatsAppAdapter"
 ]

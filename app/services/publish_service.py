@@ -8,6 +8,8 @@ from app.adapters.facebook import FacebookAdapter
 from app.adapters.instagram import InstagramAdapter
 from app.adapters.twitter import TwitterAdapter
 from app.adapters.linkedin import LinkedInAdapter
+from app.adapters.youtube import YouTubeAdapter
+from app.adapters.whatsapp import WhatsAppAdapter
 from app.core.mock_oauth import is_mock_mode
 from app.models.post import Post
 from app.models.analytics import AnalyticsRecord
@@ -141,6 +143,17 @@ class PublishService:
             return TwitterAdapter(access_token)
         elif platform == "linkedin":
             return LinkedInAdapter(access_token)
+        elif platform == "youtube":
+            return YouTubeAdapter(access_token)
+        elif platform == "whatsapp":
+            # For WhatsApp, we need the phone number ID from the token
+            token = await TokenService.get_token(self.db, self.user_id, platform)
+            whatsapp_phone_number_id = token.platform_user_id if token else None
+            
+            if not whatsapp_phone_number_id and is_mock_mode():
+                whatsapp_phone_number_id = "mock_whatsapp_phone_number_id"
+            
+            return WhatsAppAdapter(access_token, whatsapp_phone_number_id or "unknown")
         else:
             return None
     
