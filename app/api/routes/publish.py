@@ -6,17 +6,26 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, delete
+from sqlalchemy import cast, String
 from app.core.database import get_db
 from app.services.publish_service import PublishService
 from app.services.token_service import TokenService
 from app.adapters.twitter import TwitterAdapter
 from app.models.post import Post
 from app.models.analytics import AnalyticsRecord
+from app.tasks.publish_tasks import publish_to_platforms_task, check_publish_status
+from fastapi import BackgroundTasks
+import uuid
+from datetime import datetime
+
 
 router = APIRouter(prefix="/publish", tags=["publishing"])
 
 # Temporary user ID (will be replaced with real auth in later days)
 CURRENT_USER_ID = 1
+
+_task_store = {}
+
 
 
 class PublishRequest(BaseModel):
@@ -38,6 +47,14 @@ class PublishResponse(BaseModel):
 class ThreadRequest(BaseModel):
     """Request model for posting a Twitter thread."""
     tweets: List[str]
+
+
+class AsyncPublishRequest(BaseModel):
+    """Request model for async publishing."""
+    platforms: List[str]
+    content: str
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
 
 
 @router.post("/", response_model=PublishResponse)
@@ -84,6 +101,96 @@ async def publish_content(
         total_platforms=len(request.platforms),
         successful=successful_count
     )
+
+
+
+
+@router.post("/async")
+async def publish_async(
+    request: AsyncPublishRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Publish content asynchronously (recommended for multiple platforms).
+    
+    This returns immediately with a task ID. Use GET /publish/status/{task_id}
+    to check progress and results.
+    """
+    # Validate platforms
+    supported_platforms = ["facebook", "instagram", "twitter", "linkedin", "youtube", "whatsapp"]
+    invalid = [p for p in request.platforms if p not in supported_platforms]
+
+    if not request.platforms:
+        raise HTTPException(status_code=400, detail="At least one platform must be specified.")
+    
+    if invalid:
+        raise HTTPException(status_code=400, detail=f"Unsupported platforms: {invalid}")
+    
+    # Validate content
+    if not request.content or len(request.content.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Content cannot be empty.")
+    
+    # Validate media
+    if request.media_url and not request.media_type:
+        raise HTTPException(status_code=400, detail="media_type is required when media_url is provided.")
+    
+    # Start async task
+    task = publish_to_platforms_task.delay(
+        user_id=CURRENT_USER_ID,
+        platforms=request.platforms,
+        content=request.content.strip(),
+        media_url=request.media_url,
+        media_type=request.media_type
+    )
+    
+    return {
+        "message": "Publish task submitted successfully",
+        "task_id": task.id,
+        "status": "processing",
+        "check_status_url": f"/api/v1/publish/status/{task.id}",
+        "platforms": request.platforms,
+        "estimated_time": f"~{len(request.platforms) * 2} seconds"
+    }
+
+
+@router.get("/status/{task_id}")
+async def get_publish_status(task_id: str):
+    """
+    Get the status of an async publish task.
+    
+    Status values:
+    - PENDING: Task waiting to start
+    - STARTED: Task is processing
+    - PUBLISHING: Currently publishing to platforms
+    - SUCCESS: Completed successfully
+    - FAILURE: Failed (check error)
+    """
+    result = check_publish_status(task_id)
+    
+    return {
+        "task_id": task_id,
+        "status": result["status"],
+        "is_complete": result["ready"],
+        "is_successful": result.get("successful"),
+        "details": result.get("result") if result.get("ready") else result.get("info"),
+        "check_again": f"/api/v1/publish/status/{task_id}" if not result["ready"] else None
+    }
+
+
+@router.post("/retry-failed")
+async def retry_failed_posts():
+    """
+    Retry all failed posts from the database.
+    
+    This is useful for recovering from temporary API issues.
+    """
+    from app.tasks.publish_tasks import retry_failed_posts
+    
+    result = await retry_failed_posts(user_id=CURRENT_USER_ID)
+    
+    return result
+
+
 
 
 @router.post("/thread")
@@ -214,9 +321,9 @@ async def get_my_threads(
     
     Shows threads with their individual tweets/analytics.
     """
+    # Get all posts first
     query = select(Post).where(
-        Post.user_id == CURRENT_USER_ID,
-        Post.platforms.contains(["twitter"])
+        Post.user_id == CURRENT_USER_ID
     ).order_by(desc(Post.created_at)).limit(limit)
     
     result = await db.execute(query)
@@ -224,26 +331,29 @@ async def get_my_threads(
     
     threads = []
     for post in posts:
-        analytics_query = select(AnalyticsRecord).where(AnalyticsRecord.post_id == post.id)
-        analytics_result = await db.execute(analytics_query)
-        tweets = analytics_result.scalars().all()
-        
-        threads.append({
-            "thread_id": post.id,
-            "created_at": post.created_at.isoformat() if post.created_at else None,
-            "published_at": post.published_at.isoformat() if post.published_at else None,
-            "status": post.status,
-            "tweet_count": len(tweets),
-            "tweets": [
-                {
-                    "tweet_number": i + 1,
-                    "tweet_id": t.platform_post_id,
-                    "collected_at": t.collected_at.isoformat() if t.collected_at else None
-                }
-                for i, t in enumerate(tweets)
-            ],
-            "preview": post.content_text[:100]
-        })
+        # Check if post is a Twitter thread (platforms list contains "twitter")
+        if "twitter" in post.platforms:
+            # Get all tweets in this thread
+            analytics_query = select(AnalyticsRecord).where(AnalyticsRecord.post_id == post.id)
+            analytics_result = await db.execute(analytics_query)
+            tweets = analytics_result.scalars().all()
+            
+            threads.append({
+                "thread_id": post.id,
+                "created_at": post.created_at.isoformat() if post.created_at else None,
+                "published_at": post.published_at.isoformat() if post.published_at else None,
+                "status": post.status,
+                "tweet_count": len(tweets),
+                "tweets": [
+                    {
+                        "tweet_number": i + 1,
+                        "tweet_id": t.platform_post_id,
+                        "collected_at": t.collected_at.isoformat() if t.collected_at else None
+                    }
+                    for i, t in enumerate(tweets)
+                ],
+                "preview": post.content_text[:100] if post.content_text else ""
+            })
     
     return {
         "total_threads": len(threads),
@@ -367,10 +477,11 @@ async def delete_post(
     return {"message": f"Post {post_id} deleted successfully"}
 
 
+
 @router.get("/supported-platforms")
 async def get_supported_platforms():
     return {
-        "current_day": "Day 5 - ALL PLATFORMS COMPLETE!",
+        "current_day": "Day 6 - Async Publishing Added!",
         "supported_platforms": {
             "facebook": {"available": True, "features": ["text", "image", "video"]},
             "instagram": {"available": True, "features": ["image", "video"]},
@@ -379,8 +490,14 @@ async def get_supported_platforms():
             "youtube": {"available": True, "features": ["video upload"], "notes": "Requires video URL"},
             "whatsapp": {"available": True, "features": ["text", "image", "video"], "notes": "Business API only"}
         },
+        "async_publishing": {
+            "available": True,
+            "endpoint": "POST /api/v1/publish/async",
+            "status_endpoint": "GET /api/v1/publish/status/{task_id}",
+            "benefits": "No waiting - API returns instantly, tasks run in background"
+        },
         "total_platforms": 6,
-        "message": "ALL 6 PLATFORMS FROM THE ORIGINAL PLAN ARE NOW SUPPORTED!"
+        "message": "ALL 6 PLATFORMS + ASYNC PUBLISHING!"
     }
 
 @router.get("/health")
@@ -389,9 +506,129 @@ async def publish_health():
     return {
         "service": "publishing",
         "status": "healthy",
-        "adapters_loaded": ["facebook", "instagram", "twitter", "linkedin"],
-        "adapters_pending": ["youtube", "whatsapp"],
+        "adapters_loaded": ["facebook", "instagram", "twitter", "linkedin", "youtube", "whatsapp"],
+        "async_enabled": True,
         "mock_mode_enabled": True,
         "ready_for_production": False,
-        "message": "All 4 platforms ready for testing with mock mode!"
+        "message": "All 6 platforms ready! Use /async for non-blocking publishing."
     }
+
+
+@router.post("/background")
+async def publish_background(
+    request: AsyncPublishRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Publish content in the background using FastAPI BackgroundTasks.
+    
+    This returns immediately with a task ID. Use GET /publish/background/status/{task_id}
+    to check progress.
+    """
+    # Validate platforms
+    supported_platforms = ["facebook", "instagram", "twitter", "linkedin", "youtube", "whatsapp"]
+    invalid = [p for p in request.platforms if p not in supported_platforms]
+    
+    if invalid:
+        raise HTTPException(status_code=400, detail=f"Unsupported platforms: {invalid}")
+    
+    # Validate content
+    if not request.content or len(request.content.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Content cannot be empty.")
+    
+    # Generate a task ID
+    task_id = str(uuid.uuid4())
+    
+    # Store task info
+    _task_store[task_id] = {
+        "status": "pending",
+        "platforms": request.platforms,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    
+    # Add background task
+    background_tasks.add_task(
+        run_background_publish,
+        task_id=task_id,
+        user_id=CURRENT_USER_ID,
+        platforms=request.platforms,
+        content=request.content.strip(),
+        media_url=request.media_url,
+        media_type=request.media_type
+    )
+    
+    return {
+        "message": "Publish task submitted successfully",
+        "task_id": task_id,
+        "status": "pending",
+        "check_status_url": f"/api/v1/publish/background/status/{task_id}",
+        "platforms": request.platforms
+    }
+
+
+@router.get("/background/status/{task_id}")
+async def get_background_status(task_id: str):
+    """Get the status of a background task."""
+    
+    task = _task_store.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return {
+        "task_id": task_id,
+        "status": task.get("status", "unknown"),
+        "result": task.get("result"),
+        "error": task.get("error"),
+        "platforms": task.get("platforms"),
+        "created_at": task.get("created_at"),
+        "completed_at": task.get("completed_at")
+    }
+
+
+async def run_background_publish(
+    task_id: str,
+    user_id: int,
+    platforms: List[str],
+    content: str,
+    media_url: Optional[str] = None,
+    media_type: Optional[str] = None
+):
+    """Background task to publish content."""
+    
+    from app.services.publish_service import PublishService
+    from app.core.database import AsyncSessionLocal
+    
+    # Update status to running
+    _task_store[task_id]["status"] = "running"
+    
+    try:
+        async with AsyncSessionLocal() as db:
+            service = PublishService(db, user_id)
+            results = await service.publish_to_platforms(
+                platforms=platforms,
+                content=content,
+                media_url=media_url,
+                media_type=media_type
+            )
+            
+            successful = sum(1 for r in results.values() if r.get("success"))
+            
+            # Update task store with results
+            _task_store[task_id].update({
+                "status": "completed",
+                "result": results,
+                "successful": successful,
+                "total": len(platforms),
+                "completed_at": datetime.utcnow().isoformat()
+            })
+            
+            print(f"Background task {task_id}: Published to {successful}/{len(platforms)} platforms")
+            
+    except Exception as e:
+        _task_store[task_id].update({
+            "status": "failed",
+            "error": str(e),
+            "completed_at": datetime.utcnow().isoformat()
+        })
+        print(f"Background task {task_id} failed: {e}")

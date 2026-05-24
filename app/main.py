@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.api.routes import auth, mock_auth, publish  # ← MAKE SURE publish IS IMPORTED
 from app.services.user_service import UserService
+from app.core.celery_app import celery_app
 
 
 @asynccontextmanager
@@ -21,9 +22,13 @@ async def lifespan(app: FastAPI):
         await UserService.get_or_create_test_user(db)
         print("Test user created (email: test@example.com)")
     
-    print(f"Database ready: {settings.database_url}")
+    # Start Celery (in production, you'd run separate worker)
+    print("Celery configured for async tasks")
+    print("Run 'celery -A celery_worker worker --loglevel=info' in another terminal for background tasks")
+    
     print(f"API Docs: http://localhost:8000/docs")
     print(f"OAuth endpoints: http://localhost:8000{settings.api_v1_prefix}/auth/{{platform}}/connect")
+    print(f"Celery Flower: http://localhost:5555 (if running)")
     yield
     
     # Shutdown

@@ -13,6 +13,8 @@ aiosqlite==0.19.0  # ← ADD THIS LINE (for SQLite support)
 # Task Queue
 celery==5.3.4
 redis==5.0.1
+flower==2.0.1
+nest_asyncio==1.6.0
 
 # HTTP Client
 httpx==0.25.1
