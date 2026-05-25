@@ -31,7 +31,7 @@ async def youtube_connect(request: Request):
     """YouTube OAuth connection - Real implementation."""
     
     print("=" * 50)
-    print("🔐 YouTube OAuth Started")
+    print("YouTube OAuth Started")
     
     if is_mock_mode():
         print("   Using MOCK mode")
@@ -41,8 +41,8 @@ async def youtube_connect(request: Request):
         mock_url = get_mock_authorize_url("youtube", state, redirect_uri)
         return RedirectResponse(url=mock_url)
     
-    print("   Using REAL Google OAuth")
-    print(f"   Client ID: {settings.youtube_client_id[:20]}...")
+    print("Using REAL Google OAuth")
+    print(f"Client ID: {settings.youtube_client_id[:20]}...")
     
     from authlib.integrations.httpx_client import AsyncOAuth2Client
     
@@ -67,7 +67,7 @@ async def youtube_connect(request: Request):
         prompt="consent"
     )
     
-    print(f"   ✅ Redirecting to Google...")
+    print(f"Redirecting to Google...")
     print("=" * 50)
     
     return RedirectResponse(url=authorization_url)

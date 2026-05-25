@@ -1,92 +1,92 @@
 # Unified Social Media API
 
-> A scalable Python-based backend service that enables users to publish content once and distribute it across multiple social media platforms from a single unified API.  
-> The platform also centralizes analytics, engagement metrics, comments, likes, reactions, and token management into one dashboard-ready backend system.
+A scalable Python-based backend service that enables developers and businesses to publish content across multiple social media platforms using a single unified API. The system centralizes authentication, publishing workflows, token management, analytics, and engagement tracking into one extensible backend architecture.
 
 ---
 
-# 📚 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Core Features](#-core-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Supported Platforms](#-supported-platforms)
-- [Prerequisites](#-prerequisites)
-- [Quick Start](#-quick-start)
-- [Environment Configuration](#-environment-configuration)
-- [Project Structure](#-project-structure)
-- [API Endpoints](#-api-endpoints)
-- [Authentication Flow](#-authentication-flow)
-- [Testing with Mock OAuth](#-testing-with-mock-oauth)
-- [Publishing Workflow](#-publishing-workflow)
-- [Switching to Production Credentials](#-switching-to-production-credentials)
-- [Database Models](#-database-models)
-- [Development Roadmap](#-development-roadmap)
-- [Troubleshooting](#-troubleshooting)
-- [Development Commands](#-development-commands)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Overview](#overview)
+- [Core Features](#core-features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Supported Platforms](#supported-platforms)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Environment Configuration](#environment-configuration)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [API Endpoints](#api-endpoints)
+- [Authentication Flow](#authentication-flow)
+- [Publishing Workflow](#publishing-workflow)
+- [Mock OAuth Testing](#mock-oauth-testing)
+- [Production Configuration](#production-configuration)
+- [Database Models](#database-models)
+- [Development Commands](#development-commands)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-#  Overview
+## Overview
 
-The **Unified Social Media API** is designed to solve the problem of managing multiple social media platforms independently.
+The Unified Social Media API simplifies multi-platform social media management by providing a single backend interface for publishing content and managing integrations.
 
-Instead of building separate integrations for Facebook, Instagram, Twitter/X, LinkedIn, YouTube, and WhatsApp Business, this system provides:
+Instead of maintaining separate integrations for each social media provider, the platform offers:
 
-- One unified publishing endpoint
+- Unified publishing endpoints
 - Centralized OAuth authentication
 - Shared token management
-- Unified analytics aggregation
-- Multi-platform engagement tracking
+- Aggregated analytics and engagement metrics
+- Modular platform adapters
+- Scalable asynchronous architecture
 
-The API acts as a middleware layer between client applications and external social media platforms.
+The API acts as a middleware layer between client applications and external social media services.
 
 ---
 
-#  Core Features
+## Core Features
 
-## ✅ Unified Publishing
+### Unified Publishing
 
-Publish a single piece of content to multiple social platforms simultaneously using one API request.
+Publish content to multiple social media platforms simultaneously using a single API request.
 
-## ✅ OAuth Authentication
+### OAuth 2.0 Authentication
 
-Secure OAuth 2.0 authentication flow implementation for all supported platforms.
+Secure authentication workflows for all supported platforms.
 
-## ✅ Token Management
+### Token Management
 
 - Secure token storage
 - Token refresh handling
 - Expiration tracking
-- Connection status monitoring
+- Connection monitoring
 
-## ✅ Mock OAuth Mode
+### Mock OAuth Mode
 
-Test the entire authentication system without requiring real developer credentials.
+Test authentication flows locally without requiring production developer credentials.
 
-## ✅ Centralized Analytics
+### Centralized Analytics
 
-Aggregate:
+Aggregate and normalize:
+
 - Likes
-- Shares
 - Comments
+- Shares
+- Reactions
+- Reach
+- Impressions
 - Engagement metrics
-- Reach and impressions
 
-into one unified backend structure.
+### Asynchronous Architecture
 
-## ✅ Async Architecture
-
-Built using asynchronous Python patterns for scalability and performance.
+Built with asynchronous Python patterns to improve scalability and performance.
 
 ---
 
-# 🏗 Architecture
-
-The system follows a modular backend architecture:
+## Architecture
 
 ```text
 Client Application
@@ -108,20 +108,20 @@ FastAPI REST API
                 └── WhatsApp Business API
 ```
 
-The architecture separates platform-specific logic into adapters, making the system scalable and easy to extend.
+The architecture isolates platform-specific implementations into adapters, making the system maintainable and easy to extend.
 
 ---
 
-# 🛠 Tech Stack
+## Tech Stack
 
 | Component | Technology |
-|-----------|------------|
+|---|---|
 | Backend Framework | FastAPI |
-| Language | Python 3.11+ |
+| Programming Language | Python 3.11+ |
 | ORM | SQLAlchemy 2.0 |
-| Database (Development) | SQLite |
-| Database (Production) | PostgreSQL |
-| Migrations | Alembic |
+| Development Database | SQLite |
+| Production Database | PostgreSQL |
+| Database Migrations | Alembic |
 | Authentication | OAuth 2.0 |
 | Token Security | JWT |
 | HTTP Client | httpx |
@@ -130,38 +130,39 @@ The architecture separates platform-specific logic into adapters, making the sys
 
 ---
 
-# 🌐 Supported Platforms
+## Supported Platforms
 
-| Platform | Features |
-|----------|----------|
-| Facebook | Posts, analytics, comments |
-| Instagram | Images, reels, engagement |
-| Twitter/X | Tweets, replies |
-| LinkedIn | Professional posts, reactions |
-| YouTube | Video uploads |
-| WhatsApp Business | Messaging support |
+| Platform | Capabilities |
+|---|---|
+| Facebook | Publishing, analytics, engagement |
+| Instagram | Media publishing, engagement |
+| Twitter/X | Tweet publishing and interactions |
+| LinkedIn | Professional content publishing |
+| YouTube | Video uploads and analytics |
+| WhatsApp Business | Messaging integration |
 
 ---
 
-# 📦 Prerequisites
+## Prerequisites
 
-Before running the project, ensure you have:
+Ensure the following tools are installed before running the project:
 
 - Python 3.11+
 - Git
 - pip
 - Virtual environment support
 
-Optional for production:
-- Docker Desktop
+Optional for production environments:
+
 - PostgreSQL
+- Docker
 - Redis
 
 ---
 
-# ⚡ Quick Start
+## Quick Start
 
-## 1. Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/lucy-ann/Unified-Social-API.git
@@ -170,16 +171,16 @@ cd Unified-Social-API
 
 ---
 
-## 2. Create a Virtual Environment
+### 2. Create and Activate a Virtual Environment
 
-### Windows
+#### Windows
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### Mac/Linux
+#### macOS/Linux
 
 ```bash
 python3 -m venv venv
@@ -188,7 +189,7 @@ source venv/bin/activate
 
 ---
 
-## 3. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -196,17 +197,15 @@ pip install -r requirements.txt
 
 ---
 
-## 4. Configure Environment Variables
+### 4. Configure Environment Variables
 
-Copy the environment template:
-
-### Windows
+#### Windows
 
 ```bash
 copy .env.example .env
 ```
 
-### Mac/Linux
+#### macOS/Linux
 
 ```bash
 cp .env.example .env
@@ -214,7 +213,7 @@ cp .env.example .env
 
 ---
 
-# ⚙ Environment Configuration
+## Environment Configuration
 
 Example `.env` configuration:
 
@@ -226,38 +225,34 @@ SECRET_KEY="change-this-in-production"
 
 API_V1_PREFIX="/api/v1"
 
-# SQLite for development
 DATABASE_URL="sqlite+aiosqlite:///./unified_social.db"
 DATABASE_SYNC_URL="sqlite:///./unified_social.db"
 
-# OAuth Testing
 MOCK_OAUTH=true
 ```
 
----
-
-## Important Environment Variables
+### Important Environment Variables
 
 | Variable | Description |
-|----------|-------------|
+|---|---|
 | `APP_NAME` | Application name |
-| `DEBUG` | Enable debug mode |
+| `DEBUG` | Enables debug mode |
 | `SECRET_KEY` | JWT signing secret |
 | `DATABASE_URL` | Async database connection |
 | `DATABASE_SYNC_URL` | Sync database connection |
-| `MOCK_OAUTH` | Enable mock OAuth mode |
+| `MOCK_OAUTH` | Enables mock OAuth mode |
 
 ---
 
-# ▶ Running the Application
+## Running the Application
 
-Start the FastAPI development server:
+Start the development server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Server will run at:
+Application URL:
 
 ```text
 http://localhost:8000
@@ -265,19 +260,19 @@ http://localhost:8000
 
 ---
 
-# 📖 API Documentation
+## API Documentation
 
-FastAPI automatically generates Swagger documentation.
+FastAPI automatically generates API documentation.
 
 | Service | URL |
-|---------|-----|
-| Swagger Docs | http://localhost:8000/docs |
+|---|---|
+| Swagger UI | http://localhost:8000/docs |
 | ReDoc | http://localhost:8000/redoc |
 | Health Check | http://localhost:8000/health |
 
 ---
 
-# 📁 Project Structure
+## Project Structure
 
 ```text
 Unified-Social-API/
@@ -316,17 +311,17 @@ Unified-Social-API/
 
 ---
 
-# 🔌 API Endpoints
+## API Endpoints
 
-# Authentication Endpoints
+### Authentication Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | GET | `/api/v1/auth/{platform}/connect` | Start OAuth flow |
 | GET | `/api/v1/auth/{platform}/callback` | OAuth callback |
-| GET | `/api/v1/auth/{platform}/tokens` | Check token status |
+| GET | `/api/v1/auth/{platform}/tokens` | Retrieve token status |
 
-Supported values for `{platform}`:
+Supported platform values:
 
 ```text
 facebook
@@ -339,43 +334,41 @@ whatsapp
 
 ---
 
-# 📤 Publishing Endpoints
+### Publishing Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | POST | `/api/v1/publish/` | Publish content |
-| GET | `/api/v1/publish/test` | Test endpoint |
+
 
 ---
 
-# 📤 Example Publish Request
+### Example Publish Request
 
 ```bash
 curl -X POST "http://localhost:8000/api/v1/publish/" \
   -H "Content-Type: application/json" \
   -d '{
     "platforms": ["facebook", "twitter", "linkedin"],
-    "content": "Hello from Unified Social API 🚀",
+    "content": "Hello from Unified Social API",
     "media_url": null
   }'
 ```
 
 ---
 
-# 🔐 Authentication Flow
+## Authentication Flow
 
-The authentication system follows the OAuth 2.0 authorization code flow.
-
-## OAuth Workflow
+The platform implements the OAuth 2.0 Authorization Code Flow.
 
 ```text
 User
   │
   ▼
-/connect endpoint
+/connect Endpoint
   │
   ▼
-Platform Login Page
+Platform Authentication
   │
   ▼
 Authorization Approval
@@ -384,78 +377,12 @@ Authorization Approval
 Callback Endpoint
   │
   ▼
-Access Token Storage
+Token Storage
 ```
 
 ---
 
-# 🧪 Testing with Mock OAuth
-
-Mock OAuth allows developers to test integrations without waiting for platform approvals.
-
-## Benefits
-
-- No developer accounts required
-- No API review delays
-- Instant testing
-- Simulated tokens
-- Realistic authentication flow
-
----
-
-# 🧪 Testing OAuth
-
-## Start the Server
-
-```bash
-uvicorn app.main:app --reload
-```
-
----
-
-## Test Facebook OAuth
-
-Open in browser:
-
-```text
-http://localhost:8000/api/v1/auth/facebook/connect
-```
-
----
-
-## Test Other Platforms
-
-```text
-http://localhost:8000/api/v1/auth/twitter/connect
-http://localhost:8000/api/v1/auth/linkedin/connect
-http://localhost:8000/api/v1/auth/instagram/connect
-```
-
----
-
-# 🔎 Check Token Status
-
-```bash
-curl http://localhost:8000/api/v1/auth/facebook/tokens
-```
-
-Example response:
-
-```json
-{
-  "platform": "facebook",
-  "connected": true,
-  "platform_user_id": "mock_facebook_12345",
-  "expires_at": "2026-05-22T15:30:00",
-  "is_expired": false
-}
-```
-
----
-
-# 📤 Publishing Workflow
-
-The unified publishing system follows this process:
+## Publishing Workflow
 
 ```text
 Client Request
@@ -463,28 +390,51 @@ Client Request
       ▼
 Publish Service
       │
-      ├── Validate Payload
+      ├── Validate Request
       ├── Check Tokens
       ├── Select Platforms
       ├── Dispatch Requests
       └── Aggregate Responses
 ```
 
-Each platform adapter handles platform-specific formatting internally.
+Each adapter internally handles platform-specific payload formatting and API communication.
 
 ---
 
-# 🔐 Switching to Production Credentials
+## Mock OAuth Testing
 
-## Step 1: Disable Mock Mode
+Mock OAuth mode allows developers to test authentication flows without requiring production credentials or app approvals.
+
+### Benefits
+
+- Local development support
+- Faster integration testing
+- Simulated authentication responses
+- No external platform approvals required
+
+### Enable Mock OAuth
+
+```env
+MOCK_OAUTH=true
+```
+
+### Example OAuth Test URL
+
+```text
+http://localhost:8000/api/v1/auth/facebook/connect
+```
+
+---
+
+## Production Configuration
+
+### Disable Mock OAuth
 
 ```env
 MOCK_OAUTH=false
 ```
 
----
-
-## Step 2: Add Real Credentials
+### Add Production Credentials
 
 ```env
 META_APP_ID="your_meta_app_id"
@@ -500,9 +450,7 @@ YOUTUBE_CLIENT_ID="your_google_client_id"
 YOUTUBE_CLIENT_SECRET="your_google_client_secret"
 ```
 
----
-
-## Step 3: Register Redirect URIs
+### Register Redirect URIs
 
 ```text
 http://localhost:8000/api/v1/auth/facebook/callback
@@ -515,127 +463,59 @@ http://localhost:8000/api/v1/auth/whatsapp/callback
 
 ---
 
-# 🗄 Database Models
+## Database Models
 
-## User Model
+### User Model
 
 Stores:
+
 - User profile data
 - Authentication metadata
 
-## Token Model
+### Token Model
 
 Stores:
+
 - Access tokens
 - Refresh tokens
-- Expiration dates
+- Expiration timestamps
 - Platform associations
 
-## Post Model
+### Post Model
 
 Stores:
+
 - Published content
 - Platform mappings
 - Publishing status
 
-## Analytics Model
+### Analytics Model
 
 Stores:
+
 - Engagement metrics
-- Impressions
-- Likes
-- Comments
-- Reach statistics
+- Reach and impressions
+- Likes and comments
+- Platform analytics
 
 ---
 
-# 📊 Development Roadmap
+## Development Commands
 
-| Day | Status | Deliverables |
-|----|--------|--------------|
-| Day 1 | ✅ Complete | Project setup & database |
-| Day 2 | ✅ Complete | OAuth & mock mode |
-| Day 3 | 🚧 In Progress | Facebook & Instagram adapters |
-| Day 4 | ⏳ Pending | Twitter/X & LinkedIn |
-| Day 5 | ⏳ Pending | YouTube & WhatsApp |
-| Day 6 | ⏳ Pending | Unified publish service |
-| Day 7 | ⏳ Pending | Analytics aggregation |
-| Day 8 | ⏳ Pending | Comments & engagement |
-| Day 9 | ⏳ Pending | Rate limiting & error handling |
-| Day 10 | ⏳ Pending | Testing & final documentation |
-
----
-
-# 🐛 Troubleshooting
-
-## Issue: Module Not Found
-
-```bash
-pip install -r requirements.txt
-```
-
-Ensure your virtual environment is activated.
-
----
-
-## Issue: Port Already in Use
-
-```bash
-uvicorn app.main:app --reload --port 8001
-```
-
----
-
-## Issue: Database Errors
-
-Delete the local SQLite database:
-
-### Windows
-
-```bash
-del unified_social.db
-```
-
-### Mac/Linux
-
-```bash
-rm unified_social.db
-```
-
----
-
-## Issue: Mock OAuth Not Working
-
-Check:
-
-```env
-MOCK_OAUTH=true
-```
-
-Then restart the server.
-
----
-
-# 🧪 Development Commands
-
-## Run Tests
+### Run Tests
 
 ```bash
 pytest
 ```
 
----
-
-## Format Code
+### Format Code
 
 ```bash
 black app/
 isort app/
 ```
 
----
-
-## Type Checking
+### Type Checking
 
 ```bash
 mypy app/
@@ -643,9 +523,61 @@ mypy app/
 
 ---
 
-#  Contributing
+## Troubleshooting
 
-## Development Setup
+### Module Not Found
+
+Ensure dependencies are installed and the virtual environment is activated:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### Port Already in Use
+
+Run the server on another port:
+
+```bash
+uvicorn app.main:app --reload --port 8001
+```
+
+---
+
+### Database Issues
+
+Delete the local SQLite database and restart the application.
+
+#### Windows
+
+```bash
+del unified_social.db
+```
+
+#### macOS/Linux
+
+```bash
+rm unified_social.db
+```
+
+---
+
+### Mock OAuth Not Working
+
+Verify the following configuration:
+
+```env
+MOCK_OAUTH=true
+```
+
+Restart the application after updating environment variables.
+
+---
+
+## Contributing
+
+### Development Setup
 
 Install development dependencies:
 
@@ -653,44 +585,13 @@ Install development dependencies:
 pip install -r requirements-dev.txt
 ```
 
----
+### Contribution Workflow
 
-
-
-# 📝 License
-
-This project is intended for educational and development purposes.
-
----
-
-#  Acknowledgments
-
-Special thanks to:
-
-- FastAPI
-- SQLAlchemy
-- Authlib
-- Uvicorn
-- All supported platform APIs
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push the branch
+5. Open a pull request
 
 ---
-
-#  Project Vision
-
-The goal of this project is to simplify multi-platform social media management by providing developers and businesses with a single unified integration layer.
-
----
-
-
-
-# ✅ Current Project Status
-
-| Feature | Status |
-|---------|--------|
-| OAuth Flows | ✅ Complete |
-| Token Storage | ✅ Complete |
-| Mock OAuth | ✅ Complete |
-| Publishing Preview | ✅ Complete |
-| Database Models | ✅ Complete |
-| README Documentation | ✅ Complete |
 
