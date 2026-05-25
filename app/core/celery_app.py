@@ -11,10 +11,10 @@ try:
     r = redis.Redis(host='localhost', port=6379, socket_connect_timeout=1)
     r.ping()
     REDIS_AVAILABLE = True
-    print("✅ Redis connection successful")
+    print("Redis connection successful")
 except:
-    print("⚠️ Redis not available, using in-memory transport for Celery")
-    print("   Install Redis or use Docker for full async capabilities")
+    print("Redis not available, using in-memory transport for Celery")
+    print("Install Redis or use Docker for full async capabilities")
 
 # Configure broker URL
 if REDIS_AVAILABLE:
@@ -47,4 +47,4 @@ celery_app.conf.update(
 # Auto-discover tasks
 celery_app.autodiscover_tasks(["app.tasks"])
 
-print(f"📊 Celery configured with broker: {broker_url}")
+print(f"Celery configured with broker: {broker_url}")

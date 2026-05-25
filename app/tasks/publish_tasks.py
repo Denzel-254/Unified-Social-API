@@ -25,7 +25,7 @@ def publish_to_platforms_task(
     from app.core.database import AsyncSessionLocal
     from app.models.post import Post
     
-    print(f"📝 Task {self.request.id}: Starting publish to {platforms}")
+    print(f"Task {self.request.id}: Starting publish to {platforms}")
     
     # Run async code in sync context
     loop = asyncio.new_event_loop()

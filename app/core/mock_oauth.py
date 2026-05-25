@@ -3,6 +3,8 @@
 from typing import Dict, Optional
 import uuid
 from datetime import datetime, timedelta
+from app.core.config import settings  
+
 
 # Mock data for testing
 MOCK_USERS = {
@@ -63,9 +65,7 @@ MOCK_TOKEN_URL = "http://localhost:8000/mock/token"
 
 def is_mock_mode() -> bool:
     """Check if mock mode is enabled."""
-    import os
-    return os.getenv("MOCK_OAUTH", "true").lower() == "true"  # Default to true for testing
-
+    return settings.mock_oauth  # - read from settings
 
 def get_mock_authorize_url(platform: str, state: str, redirect_uri: str) -> str:
     """Generate a mock authorize URL that simulates the OAuth consent screen."""

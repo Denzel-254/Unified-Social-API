@@ -66,12 +66,14 @@ def get_oauth_client(platform: str, redirect_uri: str = None) -> Optional[AsyncO
     if not config:
         return None
     
-    # In mock mode, return a dummy client
+    # Check if we're in mock mode
     if is_mock_mode():
         return MockOAuthClient(platform)
     
+    # Check if real credentials are configured
     if not config["client_id"] or not config["client_secret"]:
-        return None
+        print(f"{platform} credentials not configured. Using mock mode.")
+        return MockOAuthClient(platform)
     
     # Build full redirect URI
     if redirect_uri and not redirect_uri.startswith("http"):
@@ -83,6 +85,7 @@ def get_oauth_client(platform: str, redirect_uri: str = None) -> Optional[AsyncO
         redirect_uri=redirect_uri or config["redirect_uri"],
         scope=config["scope"],
     )
+
 
 
 class MockOAuthClient:
